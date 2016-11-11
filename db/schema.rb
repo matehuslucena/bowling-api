@@ -13,17 +13,17 @@
 ActiveRecord::Schema.define(version: 20161111114400) do
 
   create_table "frames", force: :cascade do |t|
-    t.integer  "total_score"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.integer  "total_score", default: 0
+    t.integer  "game_id"
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.index ["game_id"], name: "index_frames_on_game_id"
   end
 
   create_table "games", force: :cascade do |t|
-    t.integer  "total_score"
-    t.integer  "frame_id"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-    t.index ["frame_id"], name: "index_games_on_frame_id"
+    t.integer  "total_score", default: 0
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
   end
 
 end
