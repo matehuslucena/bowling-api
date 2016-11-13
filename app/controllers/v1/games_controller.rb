@@ -10,9 +10,15 @@ class V1::GamesController < ApplicationController
   end
 
   def update
-    @game.check_played(params[:knocked_pins].to_i)
+    return render json: { error: 'Pins quantity can not be bigger than 10' } if  knocked_pins > 10
 
-    render json: @game
+    begin
+      @game.roll(knocked_pins)
+
+      render json: @game
+    rescue
+      render json: { error: 'Game is finished' }
+    end
   end
 
   def show
@@ -20,6 +26,10 @@ class V1::GamesController < ApplicationController
   end
 
   private
+
+  def knocked_pins
+    params[:knocked_pins].to_i
+  end
 
   def set_game
     @game = Game.find(params[:id])
