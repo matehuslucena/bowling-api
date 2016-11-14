@@ -9,6 +9,7 @@ RSpec.describe V1::GamesController, type: :controller do
 
     it 'must be return 10 frames' do
       body = JSON.parse(subject.body)
+
       expect(body['data']['attributes']['frames'].size == 10).to be_truthy
     end
   end
@@ -16,7 +17,7 @@ RSpec.describe V1::GamesController, type: :controller do
   describe '#PUT update' do
     subject { put :update, parameters }
 
-    let!(:game_strike){ create :game }
+    let(:game_strike){ create :game }
 
     let(:parameters){ { params: { id: game_strike.id, knocked_pins: pins_quantity } } }
 
@@ -66,6 +67,70 @@ RSpec.describe V1::GamesController, type: :controller do
 
         expect(frame['result']).to eq 'spare'
       end
+    end
+
+    context 'when have strike in all frames' do
+      let(:all_strike_game){ create :game }
+
+      let(:parameters){ { params: { id: all_strike_game.id, knocked_pins: 10 } } }
+
+      before(:each) do
+        30.times do
+          put :update, parameters
+        end
+      end
+
+      it 'must be sum correctly' do
+        expect(Game.find(all_strike_game.id).total_score == 300).to be_truthy
+      end
+
+      it 'must be game over' do
+        subject { put :update, id: all_strike_game, knocked_pins: 1 }
+
+        msg = JSON.parse(subject.body)
+
+        expect(msg['error']).to eq I18n.t('.message.error.game_over')
+      end
+    end
+
+    context 'when have spare on the last frame' do
+      let(:spare_last_frame_game){ create :game }
+
+      let(:parameters){ { params: { id: spare_last_frame_game.id, knocked_pins: 5 } } }
+
+      context 'must be a extra throw' do
+        before(:each) do
+          20.times do
+            put :update, parameters
+          end
+
+          put :update, params: { id: spare_last_frame_game, knocked_pins: 1 }
+        end
+
+        it 'must compute the last extra throw' do
+          expect(Game.find(spare_last_frame_game.id).total_score == 101).to be_truthy
+        end
+
+        it 'must be game over after the last throw' do
+          msg = JSON.parse(subject.body)
+
+          expect(msg['error']).to eq I18n.t('.message.error.game_over')
+        end
+      end
+    end
+  end
+
+  describe '#GET show' do
+    let(:game){ create :game }
+
+    subject { get :show, params: { id: game.id } }
+
+    it{ is_expected.to be_success }
+
+    it 'must get the game' do
+      game = JSON.parse(subject.body)
+
+      expect(game['data']['attributes']['frames'].size == 10).to be_truthy
     end
   end
 end
