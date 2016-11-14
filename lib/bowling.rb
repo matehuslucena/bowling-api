@@ -1,5 +1,5 @@
 class Bowling
-  def self.roll(game, knocked_pins)
+  def self.roll!(game, knocked_pins)
     raise if get_current_frame(game).nil?
 
     current_frame = get_current_frame game
