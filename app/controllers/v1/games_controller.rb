@@ -10,14 +10,14 @@ class V1::GamesController < ApplicationController
   end
 
   def update
-    return render json: { error: 'Pins quantity can not be bigger than 10' } if  knocked_pins > 10
+    return render json: { error: I18n.t('.message.error.wrong_pins_quantity') } if  knocked_pins > 10
 
     begin
-      @game.roll(knocked_pins)
+      @game.roll knocked_pins
 
       render json: @game
     rescue
-      render json: { error: 'Game is finished' }
+      render json: { error: I18n.t('.message.error.game_over') }
     end
   end
 
