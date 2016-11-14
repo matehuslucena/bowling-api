@@ -21,3 +21,7 @@
 
 en:
   hello: "Hello world"
+  message:
+    error:
+      game_over: 'Game is finished'
+      wrong_pins_quantity: 'Pins quantity can not be bigger than 10'
