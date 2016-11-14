@@ -15,107 +15,54 @@ RSpec.describe V1::GamesController, type: :controller do
   end
 
   describe '#PUT update' do
+    let(:parameters){ { params: { id: game.id, knocked_pins: pins_quantity } } }
+
     subject { put :update, parameters }
 
-    let(:game_strike){ create :game }
-
-    let(:parameters){ { params: { id: game_strike.id, knocked_pins: pins_quantity } } }
-
-    context 'when one throw knocked down 10 pins' do
+    context 'when action is called with correct params' do
+      let(:game){ create :game }
       let(:pins_quantity){ 10 }
 
-      it 'must be a strike' do
-        body = JSON.parse(subject.body)
-        frame = body['data']['attributes']['frames'].first
+      it 'must call method from lib' do
+        allow(Bowling).to receive(:roll!).with(game, 10).and_return(game)
 
-        expect(frame['result']).to eq 'strike'
-      end
+        expect(Bowling).to receive(:roll!)
 
-      context 'if is strike plus 2 throws' do
-        let(:pins_quantity){ 3 }
-
-        it 'must be sum previous point and extra throw point' do
-          game_strike.frames.first.update(score: 10, throw_count: 1, result: 'strike', is_active: true)
-
-          body = JSON.parse(subject.body)
-          frame = body['data']['attributes']['frames'].first
-
-          expect(frame['score']).to eq 13
-        end
-
-        it 'when 2 plus throws end must be desactivate current frame and active next' do
-          game_strike.frames.first.update(score: 20, throw_count: 2, result: 'strike', is_active: true)
-
-          body = JSON.parse(subject.body)
-          frame = body['data']['attributes']['frames'].second
-
-          expect(frame['is_active']).to eq true
-        end
+        subject
       end
     end
 
-    context 'when knocked down 10 pins with two throws' do
-      let(:game_spare){ create :game }
+    context 'when action is called with knocked pins bigger than 10' do
+      let(:game){ create :game }
+      let(:pins_quantity){ 11 }
 
-      let(:parameters){ { params: { id: game_spare.id, knocked_pins: 9 } } }
+      it 'must not call method from lib' do
+        allow(Bowling).to receive(:roll!).with(game, 10).and_return(game)
 
-      it 'must be a spare' do
-        game_spare.frames.first.update(score: 1, throw_count: 1)
+        expect(Bowling).not_to receive(:roll!)
 
-        body = JSON.parse(subject.body)
-        frame = body['data']['attributes']['frames'].first
+        subject
+      end
 
-        expect(frame['result']).to eq 'spare'
+      it 'must return error message' do
+        message = JSON.parse(subject.body)
+
+        expect(message['error']).to eq I18n.t('.message.error.wrong_pins_quantity')
       end
     end
 
-    context 'when have strike in all frames' do
-      let(:all_strike_game){ create :game }
+    context 'when all frames are played' do
+      let(:game){ create :game }
+      let(:pins_quantity){ 5 }
 
-      let(:parameters){ { params: { id: all_strike_game.id, knocked_pins: 10 } } }
-
-      before(:each) do
-        30.times do
-          put :update, parameters
-        end
-      end
-
-      it 'must be sum correctly' do
-        expect(Game.find(all_strike_game.id).total_score == 300).to be_truthy
-      end
-
-      it 'must be game over' do
-        subject { put :update, id: all_strike_game, knocked_pins: 1 }
-
-        msg = JSON.parse(subject.body)
-
-        expect(msg['error']).to eq I18n.t('.message.error.game_over')
-      end
-    end
-
-    context 'when have spare on the last frame' do
-      let(:spare_last_frame_game){ create :game }
-
-      let(:parameters){ { params: { id: spare_last_frame_game.id, knocked_pins: 5 } } }
-
-      context 'must be a extra throw' do
-        before(:each) do
-          20.times do
-            put :update, parameters
-          end
-
-          put :update, params: { id: spare_last_frame_game, knocked_pins: 1 }
+      it 'must return game over message' do
+        21.times do
+          put :update, params:{ id: game.id, knocked_pins: 5 }
         end
 
-        it 'must compute the last extra throw' do
-          expect(Game.find(spare_last_frame_game.id).total_score == 101).to be_truthy
-        end
+        message = JSON.parse(subject.body)
 
-        it 'must be game over after the last throw' do
-          msg = JSON.parse(subject.body)
-
-          expect(msg['error']).to eq I18n.t('.message.error.game_over')
-        end
+        expect(message['error']).to eq I18n.t('.message.error.game_over')
       end
     end
   end
