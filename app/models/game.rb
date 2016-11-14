@@ -15,12 +15,12 @@ class Game < ApplicationRecord
 
     if current_frame.throw_count == 2 && current_frame.score < 10
       current_frame.update(is_active: false)
-      next_frame(current_frame).update(is_active: true) unless next_frame(current_frame).nil?
+      next_frame(current_frame).update(is_active: true) unless is_finished? current_frame
     end
 
     if current_frame.throw_count == 3
       current_frame.update(is_active: false)
-      next_frame(current_frame).update(is_active: true) unless next_frame(current_frame).nil?
+      next_frame(current_frame).update(is_active: true) unless is_finished? current_frame
 
       return
     end
@@ -34,7 +34,7 @@ class Game < ApplicationRecord
     if is_spare? current_frame
       current_frame.update(result: 'spare')
 
-      unless next_frame(current_frame).nil?
+      unless is_finished? current_frame
         current_frame.update(is_active: false)
         next_frame(current_frame).update(is_active: true)
       end
@@ -43,7 +43,12 @@ class Game < ApplicationRecord
     end
   end
 
+  def is_finished? current_frame
+    next_frame(current_frame).nil?
+  end
+
   private
+
   def join_total_score knocked_pins
     self.total_score += knocked_pins
     self.save
