@@ -13,7 +13,7 @@ class V1::GamesController < ApplicationController
     return render json: { error: I18n.t('.message.error.wrong_pins_quantity') } if  knocked_pins > 10
 
     begin
-      Bowling.roll @game, knocked_pins
+      Bowling.roll! @game, knocked_pins
 
       render json: @game
     rescue
