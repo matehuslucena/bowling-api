@@ -5,7 +5,7 @@
 
 An API to manage a bowling game.
 
-To use the API make a clone or fork and run
+To use the API make a clone or fork of this repository and run
 
 <code>$ bundle install </code>
 
@@ -19,15 +19,15 @@ And to start the server and access the application, run
 
 <code>$ rails server</code>
 
-To start a new game make a POST request to
+To start a new game do a POST request to
 
 <code>http://localhost:3000/v1/games</code>
 
-To register a new throw make a PUT request to
+To register a new throw do a PUT request to
 
 <code>http://localhost:3000/v1/games/:game_id?knocked_pins=:number_of_knocked_pins</code>
 
-To check scores of a game make a GET request to
+To check scores of a game do a GET request to
 
 <code>http://localhost:3000/v1/games/game_id</code>
 
