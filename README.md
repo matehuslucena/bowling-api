@@ -5,7 +5,7 @@
 
 An API to manage a bowling game.
 
-To use just make a clone or fork and run
+To use the API make a clone or fork and run
 
 <code>$ bundle install </code>
 
@@ -17,7 +17,7 @@ To create the database
 
 And to start the server and access the application, run
 
-<code> $ rails server</code>
+<code>$ rails server</code>
 
 To start a new game make a POST request to
 
